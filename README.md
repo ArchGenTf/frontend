@@ -18,7 +18,7 @@ The calling workflow [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml) 
 3. **Build Execution**: Builds the Next.js application to check for compile errors.
 4. **SonarQube Scan**: Validates code quality and safety.
 5. **Snyk Scan**: Scans Node packages for CVEs.
-6. **Notifications**: Sends SMTP email and Slack notifications.
+6. **Notifications**: Sends Slack notifications.
 
 #### Build & Deploy (`push`)
 1. **Metadata Generation**: Creates a short SHA tag (e.g. `sha-f32a762`).
@@ -26,7 +26,7 @@ The calling workflow [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml) 
 3. **Trivy CVE Scan**: Checks the compiled container image for vulnerabilities.
 4. **Registry Push**: Pushes the image to `acrarchgen.azurecr.io/frontend` with the short SHA tag and the `latest` tag.
 5. **Repository Dispatch**: Fires a `service-image-updated` dispatch event to the `Main` repo to trigger automatic deployment to Dev.
-6. **Notifications**: Sends email and Slack notifications.
+6. **Notifications**: Sends Slack notifications.
 
 ---
 
@@ -52,15 +52,7 @@ Add these secrets to your GitHub repository under `Settings` -> `Secrets and var
    *(Replace `<SUBSCRIPTION_ID>` and `<RESOURCE_GROUP_NAME>` with your Azure subscription ID and resource group where your ACR resides)*
 3. Copy the output JSON block and save it as `AZURE_CREDENTIALS` in your repository secrets.
 
-### 3. SMTP Email Secrets (SMTP Notification)
-*Optional. Set up these secrets to receive automated email reports on build/check outcomes.*
-- `SMTP_HOST`: The SMTP server host (e.g., `smtp.gmail.com`).
-- `SMTP_PORT`: SMTP server port (e.g. `465` or `587`).
-- `SMTP_USER`: SMTP username / sender account.
-- `SMTP_PASS`: SMTP password / App Password.
-- `NOTIFY_EMAIL`: Destination email address to receive build logs.
-
-### 4. `SLACK_WEBHOOK` (Slack Incoming Webhook URL)
+### 3. `SLACK_WEBHOOK` (Slack Incoming Webhook URL)
 *Optional. Needed to send pipeline success/failure alerts to Slack.*
 1. Create a Slack App in your workspace via the [Slack API console](https://api.slack.com/apps).
 2. Go to **Incoming Webhooks** and toggle it **On**.
@@ -68,7 +60,7 @@ Add these secrets to your GitHub repository under `Settings` -> `Secrets and var
 4. Copy the generated Webhook URL (starts with `https://hooks.slack.com/services/`).
 5. Save this as `SLACK_WEBHOOK` in your repository secrets.
 
-### 5. SonarQube & Snyk Secrets
+### 4. SonarQube & Snyk Secrets
 *Optional. Configure these to enable static code security analysis and library scanning.*
 - `SONAR_TOKEN`: API token generated from SonarCloud (`My Account` -> `Security`).
 - `SONAR_URL`: SonarQube host URL (defaults to `https://sonarcloud.io`).
