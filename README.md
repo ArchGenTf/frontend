@@ -16,7 +16,7 @@ The calling workflow [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml) 
 1. **Install Dependencies**: Runs `npm ci` with caching.
 2. **Test Execution**: Runs test coverage analysis.
 3. **Build Execution**: Builds the Next.js application to check for compile errors.
-4. **SonarQube Scan**: Validates code quality and safety.
+4. **SonarCloud Scan**: Validates code quality and safety.
 5. **Snyk Scan**: Scans Node packages for CVEs.
 6. **Notifications**: Sends Slack notifications.
 
@@ -60,10 +60,9 @@ Add these secrets to your GitHub repository under `Settings` -> `Secrets and var
 4. Copy the generated Webhook URL (starts with `https://hooks.slack.com/services/`).
 5. Save this as `SLACK_WEBHOOK` in your repository secrets.
 
-### 4. SonarQube & Snyk Secrets
+### 4. SonarCloud & Snyk Secrets
 *Optional. Configure these to enable static code security analysis and library scanning.*
 - `SONAR_TOKEN`: API token generated from SonarCloud (`My Account` -> `Security`).
-- `SONAR_URL`: SonarQube host URL (defaults to `https://sonarcloud.io`).
 - `SONAR_KEY`: (Optional) Custom Sonar project key (defaults to `ArchGenTf_archgen-frontend`).
 - `SNYK_TOKEN`: Snyk API token generated from Snyk account settings.
 
