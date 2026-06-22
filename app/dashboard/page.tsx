@@ -66,6 +66,7 @@ import {
   refreshAccessToken,
   saveProject,
   deleteProject,
+  API_BASE_URL,
 } from "../../lib/api";
 import { RequirementInput, NodeSchema } from "../../types";
 
@@ -386,7 +387,7 @@ export default function DashboardPage() {
     const id = projId || activeProjectId;
     if (!id || !authToken) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/projects/${id}/versions`, {
+      const res = await fetch(`${API_BASE_URL}/api/projects/${id}/versions`, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
       if (res.ok) {
@@ -401,14 +402,14 @@ export default function DashboardPage() {
   const handleRollback = async (versionId: string) => {
     if (!activeProjectId || !authToken) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/projects/${activeProjectId}/versions/${versionId}/rollback`, {
+      const res = await fetch(`${API_BASE_URL}/api/projects/${activeProjectId}/versions/${versionId}/rollback`, {
         method: "POST",
         headers: { Authorization: `Bearer ${authToken}` }
       });
       if (res.ok) {
         pushActivity(`Rolled back project to version ${versionId}`);
         // Reload project
-        const projectRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/projects/${activeProjectId}`, {
+        const projectRes = await fetch(`${API_BASE_URL}/api/projects/${activeProjectId}`, {
           headers: { Authorization: `Bearer ${authToken}` }
         });
         if (projectRes.ok) {
