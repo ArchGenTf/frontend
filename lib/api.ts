@@ -1,6 +1,6 @@
 import { RequirementInput, ArchitectureResponse, TerraformRequest, TerraformResponse } from "../types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (typeof window !== "undefined" ? "" : "http://localhost:8080");
 
 const log = (msg: string, data?: unknown) => {
   if (process.env.NODE_ENV !== "production") {
