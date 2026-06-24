@@ -1,78 +1,93 @@
-# ArchGen Frontend Application
+# ArchGen Frontend (archgen-frontend)
 
-### Testt-6
-
-This repository houses the Next.js React frontend application. CI/CD builds, quality checks, and GitOps promotions are handled via the centralized modular pipeline.
+ArchGen Frontend is a modern, single-page web application (SPA) built with **Next.js (App Router)** and **TypeScript**. It provides an interactive cloud diagramming canvas utilizing **React Flow** to generate, visualize, edit, and optimize cloud architectures, compile Terraform files, track project version history, and view security audits.
 
 ---
 
-## CI/CD Pipeline Triggers
+## 1. Tech Stack & Key Libraries
 
-The calling workflow [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml) triggers on two events:
-1. **Pull Request to `master`**: Runs the `pr-checks` job inside the reusable `frontend.yml` pipeline.
-2. **Merge/Push to `master`**: Runs the `build` job inside the reusable `frontend.yml` pipeline.
+The application dependencies are configured in [package.json](file:///c:/Users/Praveen/Desktop/New%20folder/archgen-frontend/package.json):
 
-### Pipeline Stages
-
-#### PR Checks (`pull_request`)
-1. **Install Dependencies**: Runs `npm ci` with caching.
-2. **Test Execution**: Runs test coverage analysis.
-3. **Build Execution**: Builds the Next.js application to check for compile errors.
-4. **SonarCloud Scan**: Validates code quality and safety.
-5. **Snyk Scan**: Scans Node packages for CVEs.
-6. **Notifications**: Sends Slack notifications.
-
-#### Build & Deploy (`push`)
-1. **Metadata Generation**: Creates a short SHA tag (e.g. `sha-f32a762`).
-2. **Docker Build**: Compiles the image using the local `Dockerfile`.
-3. **Trivy CVE Scan**: Checks the compiled container image for vulnerabilities.
-4. **Registry Push**: Pushes the image to `acrarchgen.azurecr.io/frontend` with the short SHA tag and the `latest` tag.
-5. **Repository Dispatch**: Fires a `service-image-updated` dispatch event to the `Main` repo to trigger automatic deployment to Dev.
-6. **Notifications**: Sends Slack notifications.
+* **Framework**: Next.js 14+ (React 18) with App Router.
+* **Diagram Canvas**: `reactflow` (version 11+) for node graph manipulation, custom nodes, routing edges, and viewport controls.
+* **Styling**: Tailwind CSS with custom styling and CSS variables in [globals.css](file:///c:/Users/Praveen/Desktop/New%20folder/archgen-frontend/app/globals.css).
+* **Animations**: `framer-motion` for smooth micro-animations, transitions, slide-outs, and loading indicators.
+* **Icons**: `lucide-react` for cloud service icons, action triggers, and sidebar elements.
+* **Utilities**: `tailwind-merge` and `clsx` for conditional CSS class styling.
 
 ---
 
-## Required Secrets Setup & Generation Guide
+## 2. Directory Structure
 
-Add these secrets to your GitHub repository under `Settings` -> `Secrets and variables` -> `Actions` to authorize and run the pipeline:
+The repository organizes layout pages, hooks, state managers, and types:
 
-### 1. `GH_PAT` (GitHub Personal Access Token)
-*Required. Needed to check out and push tag updates to the Main repository and trigger dispatches.*
-1. Go to your GitHub profile settings: `Settings` -> `Developer settings` -> `Personal access tokens` -> `Tokens (classic)`.
-2. Click **Generate new token** -> **Generate new token (classic)**.
-3. Set the note (e.g., `gitops-infra-token`) and check the `repo` scope checkbox.
-4. Click **Generate token** and copy it immediately.
-5. Save this as `GH_PAT` in your service repository secrets.
-
-### 2. `AZURE_CREDENTIALS` (Azure Service Principal)
-*Required. Needed to authenticate and push container images to Azure Container Registry (`acrarchgen.azurecr.io`).*
-1. Open the Azure CLI or Cloud Shell.
-2. Generate a Service Principal JSON payload by running:
-   ```bash
-   az ad sp create-for-rbac --name "github-actions-sp" --role contributor --scopes /subscriptions/<SUBSCRIPTION_ID>/resourceGroups/<RESOURCE_GROUP_NAME> --sdk-auth
-   ```
-   *(Replace `<SUBSCRIPTION_ID>` and `<RESOURCE_GROUP_NAME>` with your Azure subscription ID and resource group where your ACR resides)*
-3. Copy the output JSON block and save it as `AZURE_CREDENTIALS` in your repository secrets.
-
-### 3. `SLACK_WEBHOOK` (Slack Incoming Webhook URL)
-*Optional. Needed to send pipeline success/failure alerts to Slack.*
-1. Create a Slack App in your workspace via the [Slack API console](https://api.slack.com/apps).
-2. Go to **Incoming Webhooks** and toggle it **On**.
-3. Click **Add New Webhook to Workspace**, select the target channel, and click **Allow**.
-4. Copy the generated Webhook URL (starts with `https://hooks.slack.com/services/`).
-5. Save this as `SLACK_WEBHOOK` in your repository secrets.
-
-### 4. SonarCloud & Snyk Secrets
-*Optional. Configure these to enable static code security analysis and library scanning.*
-- `SONAR_TOKEN`: API token generated from SonarCloud (`My Account` -> `Security`).
-- `SONAR_KEY`: (Optional) Custom Sonar project key (defaults to `ArchGenTf_archgen-frontend`).
-- `SNYK_TOKEN`: Snyk API token generated from Snyk account settings.
+```
+archgen-frontend/
+├── app/                  # Next.js App Router folders
+│   ├── dashboard/        # User project dashboard
+│   ├── login/            # Login view and verification forms
+│   ├── register/         # Signup view
+│   ├── healthz/          # Frontend container health checks
+│   ├── ready/            # Frontend container readiness checks
+│   ├── page.tsx          # Main interactive canvas workspace
+│   ├── layout.tsx        # Global HTML wrapper
+│   └── globals.css       # Tailwind directives and CSS variables
+├── components/           # Reusable UI component elements
+│   ├── canvas/           # Custom React Flow nodes and edges
+│   └── ui/               # Buttons, inputs, modals, alerts
+├── hooks/                # Custom React hook utilities
+├── lib/                  # Shared configurations and API client
+└── types/                # TypeScript type declarations
+```
 
 ---
 
-## Production Release Flow
+## 3. Core Interface Components
 
-To deploy a verified image to production:
-1. Go to the `Main` (`Infra`) repository on GitHub.
-2. Publish a **GitHub Release** with a tag formatted as: `archgen-frontend-v<version>` (e.g. `archgen-frontend-v1.0.0`).
-3. This triggers the production release workflow, which retags the dev image to `v1.0.0` and updates `k8s/frontend/values-prod.yaml` on the `master` branch.
+The main canvas is defined in [page.tsx](file:///c:/Users/Praveen/Desktop/New%20folder/archgen-frontend/app/page.tsx) and includes:
+
+1. **Control Sidebar (Component Palette)**: Allows users to drag and drop cloud nodes (Compute, Databases, Storage, Gateways, Security, Monitoring) onto the canvas.
+2. **React Flow Canvas**: Renders custom nodes representing cloud services (such as AKS, Application Gateway, Azure SQL Database, and Key Vault) grouped inside Subnets and virtual networks.
+3. **Inspector Panel (Node Details)**: Displays the properties of the selected node, allowing users to configure details like size, subnet, availability zone, IP boundaries, and pricing tier.
+4. **Control Deck**: Actions panel to trigger cost optimization (`/optimize-cost`), security/compliance validation (`/validate-architecture`), explanation generation (`/explain-architecture`), and AI-assist transformations (`/ai-assist`).
+5. **Terraform Compiler Modal**: Compiles and downloads `main.tf`, `variables.tf`, `outputs.tf`, and `terraform.tfvars`.
+
+---
+
+## 4. Configuration & Environment Variables
+
+Create a `.env` file at the root of this folder to connect to the backend gateway:
+
+| Variable | Type | Example | Description |
+|---|---|---|---|
+| `NEXT_PUBLIC_API_URL` | `str` | `http://api.printnow.space/api` | The base URL of the API Gateway routing traffic downstream. |
+
+---
+
+## 5. Development & Build Commands
+
+Manage dependencies and execute the client using standard scripts:
+
+### Installation
+Install node modules:
+```bash
+npm install
+```
+
+### Run Locally (Development Server)
+Launch the local Hot Module Replacement (HMR) dev server at `http://localhost:3000`:
+```bash
+npm run dev
+```
+
+### Build & Optimize for Production
+Compile code and build the production bundle under `.next/`:
+```bash
+npm run build
+```
+
+### Start Production Server
+Launch the production build locally:
+```bash
+npm run start
+```
